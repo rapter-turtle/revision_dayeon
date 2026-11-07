@@ -1,0 +1,134 @@
+\ProvidesPackage{reviewresponse}[2021/11/10 Review Response v1.2]
+% Author: Karl-Ludwig Besser
+% Email: k.besser@tu-bs.de
+
+
+\RequirePackage{kvoptions}
+\RequirePackage[breakable,skins]{tcolorbox}
+%%% Package Options %%%
+\DeclareStringOption{editor}
+\DeclareStringOption{journal}
+\DeclareStringOption{manuscript}
+\ProcessKeyvalOptions*
+%%%
+
+%%% Variables
+\let\editorname\reviewresponse@editor
+\let\journal\reviewresponse@journal
+\let\manuscript\reviewresponse@manuscript
+\newcommand*{\thetitle}{\@title}
+\newcommand*{\theauthor}{\@author}
+\newcommand*{\thedate}{\@date}
+
+%%% Colors
+\definecolor{colorcommentfg}{RGB}{0,53,67}
+\definecolor{colorcommentbg}{HTML}{ffffff}
+\definecolor{colorcommentframe}{RGB}{200,200,200}
+
+\colorlet{colorchangebg}{black!2}
+\colorlet{colorchangeframe}{black!20}
+%%%
+
+
+%%% General Settings
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{.3em plus .2em minus .3em}
+\renewcommand{\baselinestretch}{1.5}
+%%%
+
+%%% Counters
+\newcounter{reviewer@counter}
+\setcounter{reviewer@counter}{0}
+\newcounter{reviewcomment@counter}[reviewer@counter]
+\setcounter{reviewcomment@counter}{0}
+%%%
+
+%%% Draft markers (all three must be gone before submission; search for them)
+% \TODO{...}    : a value or fact that the authors still have to supply
+% \tbd          : an empty table cell
+% \PENDING{...} : the response below is written as finished work, but the work
+%                 it describes is not done yet
+\newcommand{\TODO}[1]{\textcolor{red}{[TODO: #1]}}
+\newcommand{\tbd}{\textcolor{red}{[TBD]}}
+\newcommand{\PENDING}[1]{{\small\textcolor{red}{[PENDING: #1]}\par}}
+%%%
+
+%%% Commands
+% The summary paragraph of the cover page is set in review_response.tex with
+% \newcommand{\revisionsummary}{...}, so this file holds no paper-specific text.
+\renewcommand*{\maketitle}{%
+	\begin{titlepage}
+		\begin{center}
+			\vspace*{1cm}
+			\normalsize{Responses to Reviewers' Comments for Manuscript \reviewresponse@manuscript}\\
+
+			\vspace{1cm}
+			\textbf{\large{\@title}}\\
+			\vspace{1cm}
+		\end{center}
+
+        \normalsize{
+        \vspace{1.5em}
+
+        Dear Editors and Reviewers,
+        \vspace{1em}
+
+        \revisionsummary
+
+        \vspace{1.5em}
+
+        Sincerely,
+
+        \@author
+
+        \vspace{1.5em}
+
+        \vfil
+        }
+	\end{titlepage}
+}
+
+\newcommand{\editor}{
+	\clearpage
+	\@ifundefined{pdfbookmark}{}{%
+		\pdfbookmark[1]{Reponse to the Editor}{hyperref@editor}%
+	}%
+}
+
+\newcommand{\reviewer}{
+	\clearpage
+	\refstepcounter{reviewer@counter}%
+	\@ifundefined{pdfbookmark}{}{%
+		\pdfbookmark[1]{Reviewer \arabic{reviewer@counter}}{hyperref@reviewer\arabic{reviewer@counter}}%
+	}%
+}
+
+% Comment numbering. The label defaults to "Comment"; Reviewer 4 numbers major
+% and minor comments separately, so \setcommentlabel{Major Comment} switches the
+% label and restarts the count.
+\newcommand{\revcommentlabel}{Comment}
+\newcommand{\setcommentlabel}[1]{%
+	\renewcommand{\revcommentlabel}{#1}%
+	\setcounter{reviewcomment@counter}{0}%
+}
+%%%
+
+%%% Blocks %%%
+\newenvironment{generalcomment}{%
+	\begin{tcolorbox}[breakable, enhanced jigsaw, attach title to upper, title={}, after title={.\enskip}, fonttitle={\bfseries}, coltitle={colorcommentfg}, colback={colorcommentbg}, colframe={colorcommentframe},]
+}{\end{tcolorbox}}
+
+% breakable: several comments in this letter are longer than one page
+\newenvironment{revcomment}[1][]{\refstepcounter{reviewcomment@counter}
+	\begin{tcolorbox}[breakable, enhanced jigsaw, attach title to upper, title={\revcommentlabel{} \arabic{reviewcomment@counter}}, after title={.\enskip}, fonttitle={\bfseries}, coltitle={colorcommentfg}, colback={colorcommentbg}, colframe={colorcommentframe},]
+}{\end{tcolorbox}}
+
+\newenvironment{revresponse}[1][{}]{%
+	\textbf{Response:} #1\par
+}{\vspace{4em plus 0em minus 1em}}
+
+\newenvironment{changes}{\begin{tcolorbox}[breakable,colback={colorchangebg}, colframe={colorchangeframe},enhanced jigsaw,]
+}{\end{tcolorbox}}
+
+
+\newcommand{\printpartbibliography}[1]{\begin{refsegment}\nocite{#1}\printbibliography[heading=none,segment=\therefsegment]\end{refsegment}}
