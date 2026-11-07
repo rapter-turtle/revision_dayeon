@@ -44,7 +44,7 @@
 
 % Cover-page summary (printed by \maketitle in reviewresponse.sty)
 \newcommand{\revisionsummary}{%
-We thank the Editor and the Reviewers of \journal{} for their constructive feedback on our paper entitled \enquote{\thetitle} (Manuscript No. \manuscript). We have revised the manuscript to address the comments. In particular, we have (i) corrected the evaluation protocol so that validation and test herb--phenotype edges, including their reverse edges, are excluded from all graph and metapath inputs, and regenerated all results under it, (ii) compared additive, dot-product, Hadamard, bilinear and MLP decoders and replaced the additive link predictor where supported by validation performance, (iii) added controlled ablation experiments that isolate cross-type synchronization, including a controlled HAN baseline, alternative update orders and repeated update rounds, (iv) repeated metapath selection on validation data only, described it as greedy forward selection, addressed repeated testing and reported the complete selection trajectory, (v) added R-GCN, HGT and DistMult baselines with paired statistics over multiple seeds, (vi) added ranking-based evaluation and degree-only baselines, (vii) repeated the Parkinson's disease case study with defined metrics, a complete ranking, a pre-specified candidate selection rule and graded literature evidence, and now describe its results as computationally prioritized candidates supported by preliminary literature evidence, (viii) narrowed the biological and generalization claims to what the graph and the evaluation support, (ix) documented the implementation and released the code, evaluation splits and metapath configurations, and (x) corrected errors in hyperparameters, terminology, figure labels and references. Detailed responses to all comments, together with the corresponding changes in the manuscript, are provided in the following pages, and the requests that we did not implement in full are listed with reasons in the response to the Editor.
+\TODO{Cover-page summary of the revision.}%
 }
 
 \begin{document}
@@ -58,34 +58,6 @@ We thank the Editor and the Reviewers of \journal{} for their constructive feedb
 \section*{\normalsize{Authors' Response to the Editor}}
 
 When revising your manuscript, please consider all issues mentioned in the reviewers' comments carefully: please outline every change made in response to their comments and provide suitable rebuttals for any comments not addressed.
-
-\begin{itemize}\renewcommand{\labelitemi}{$\rightarrow$}
-\color{blue} \item Thank you for the opportunity to revise the manuscript. Every comment is answered individually in the following pages, and the corresponding manuscript changes are shown in the shaded boxes. When several reviewers requested the same change, the revised text is shown once and the other responses point to it. Section, equation and figure numbers refer to the version that was sent for review. Table~\ref{tab:not-addressed} lists the requests that we did not implement in full, with the reason and what we did instead.
-\end{itemize}
-
-\PENDING{Update this table at the experiment freeze: remove any row whose experiment was completed.}
-
-{\color{blue}
-\begin{table}[h]
-\centering
-\caption{Requests not implemented in full.}
-\label{tab:not-addressed}
-\small
-\begin{tabular}{@{}p{0.2\linewidth}p{0.36\linewidth}p{0.38\linewidth}@{}}
-\toprule
-Comment & Reason & What we did instead \\
-\midrule
-MAGNN, GTN and ComplEx baselines (R1.6, R3.14, R4 Major 6) & \TODO{Confirm the reason. Candidate: memory cost of metapath-instance encoding and learned adjacency products on a graph of this size.} & Added R-GCN, HGT and DistMult, which cover relation-specific message passing, heterogeneous attention and knowledge-graph embedding. \\
-Node-disjoint or cold-start evaluation (R1.8, R3.12, R4 Major 9) & Not evaluated in this revision. R1.8 offered a clear statement of the setting as an alternative. & Stated that the task is transductive link prediction, restricted the generalization claims and listed the extension as future work. \\
-Biologically informed node features and sensitivity to feature dimension (R4 Major 9) & Requires mapping all node types to curated descriptors, which is outside the scope of this revision. & Stated how the fixed random features are used and listed informed features as future work. \\
-Positive-unlabeled evaluation (R4 Major 5) & Requires an estimate of the class prior, which we do not have for this graph. & Treated unobserved pairs as unlabeled in the interpretation, added ranking metrics and discussed the limitation. \\
-Random metapath selection (R4 Major 4) & \TODO{Keep this row only if the comparison was not run.} & Compared against biologically predefined metapaths and an attention-based strategy. \\
-External, experimental or temporal validation of the case study (R4 Major 7) & Experimental work is beyond the scope of this computational study. R4 asked for this where possible. & Graded the available literature evidence by level and listed prospective validation as future work. \\
-Target and pathway nodes, and modeling of synergy (R3.1, R4 Major 8) & Requires a different graph and a different prediction task. & Presented the MCMT problem as motivation only and stated what the graph represents. \\
-\bottomrule
-\end{tabular}
-\end{table}
-}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Reviewer 1
@@ -101,11 +73,7 @@ This manuscript proposes MSGAT, a metapath-based heterogeneous graph neural netw
 \end{revcomment}
 
 \begin{revresponse}
-\PENDING{All experiments must be rerun under the corrected protocol. The code fix is done.}
 
-\textcolor{blue}{We thank the Reviewer for this comment; the concern was justified. In the original implementation, reverse edges were handled consistently with their forward edges, but the graph used at evaluation retained the herb--phenotype edges of that split. Validation and test target edges were therefore present during message passing and in the metapath-based adjacency at evaluation time.}
-
-\textcolor{blue}{We have corrected this. One input graph, containing all non-herb--phenotype edges and only the training herb--phenotype edges with their reverse edges, is now used for training, validation and testing. Validation and test edges are used only as prediction targets. Metapath-based adjacency is computed from this input graph, so metapath neighbors derive from training edges only, and each run checks automatically that no held-out edge remains in the graph in either direction. All results were regenerated under this protocol, so the values in the revised manuscript differ from the original submission. The revised text and the pseudocode are shown under Reviewer 4, Major Comment 1.}
 \end{revresponse}
 
 %%%%%%%%%%%%%%%% R1.2 %%%%%%%%%%%%%%%%
@@ -114,13 +82,7 @@ This manuscript proposes MSGAT, a metapath-based heterogeneous graph neural netw
 \end{revcomment}
 
 \begin{revresponse}
-\PENDING{Final split design is not decided. The text assumes one fixed test set; see the note in the source.}
 
-% 주의: metapath를 고정 test 1개로 재선택하고 최종 평가를 새 random split 반복으로 하면,
-% 최종 test edge의 약 80%가 선택 때 train/val로 쓰인 셈이 되어 "test와 독립"이라고 쓸 수 없습니다.
-% 그래서 고정 test set 설계로 썼습니다. 다른 설계(nested 등)를 택하면 이 응답, R2.3, R3.3,
-% R4 Major 1, 4, Minor 2를 함께 고쳐야 합니다.
-\textcolor{blue}{The term \enquote{five-fold cross-validation} in the original manuscript was inaccurate: performance was estimated over five repeated random 6:2:2 splits of the herb--phenotype edges, not over k folds. In the revised study, 20\% of the herb--phenotype edges are first set aside as one test set, which is not used at any stage of model development. The remaining edges are partitioned \TODO{N} times into training (60\% of all herb--phenotype edges) and validation (20\%) sets. Validation data are used for early stopping and for selecting the decoder and metapaths, and the test set is used only for the final report. All models use identical splits, identical validation and test negatives, and the same seeds. The split files are publicly available. The revised text is shown under Reviewer 4, Major Comment 1.}
 \end{revresponse}
 
 %%%%%%%%%%%%%%%% R1.3 %%%%%%%%%%%%%%%%
@@ -129,9 +91,7 @@ This manuscript proposes MSGAT, a metapath-based heterogeneous graph neural netw
 \end{revcomment}
 
 \begin{revresponse}
-\PENDING{Selection script is not yet revised and metapath re-selection has not been run.}
 
-\textcolor{blue}{We agree. The original selection recorded performance on the same test splits that were used for evaluation. We repeated the selection under the corrected protocol using validation performance only, with the test set withheld from the entire procedure. To address repeated testing, each candidate is compared using the corrected resampled t-test \cite{nadeau2003inference}, which accounts for overlapping training sets, with Holm correction \cite{holm1979simple} within each round. We report effect sizes and adjusted P values for all candidates in the complete trajectory. HAN metapaths were reselected in the same way. Details are shown under Reviewer 4, Major Comment 4.}
 \end{revresponse}
 
 %%%%%%%%%%%%%%%% R1.4 %%%%%%%%%%%%%%%%
@@ -140,9 +100,7 @@ This manuscript proposes MSGAT, a metapath-based heterogeneous graph neural netw
 \end{revcomment}
 
 \begin{revresponse}
-\PENDING{Sync-off experiment not yet run.}
 
-\textcolor{blue}{We agree and have added this comparison. In the configuration without synchronization, every node type is updated from the embeddings available at the start of the update round, while the metapaths, decoder, layer normalization, residual connections, hyperparameters, splits and seeds are unchanged. \TODO{State the paired difference between MSGAT and this configuration, with its 95\% CI, and the conclusion it supports.} The revised ablation table is shown under Reviewer 4, Major Comment 3.}
 \end{revresponse}
 
 %%%%%%%%%%%%%%%% R1.5 %%%%%%%%%%%%%%%%
@@ -151,12 +109,7 @@ This manuscript proposes MSGAT, a metapath-based heterogeneous graph neural netw
 \end{revcomment}
 
 \begin{revresponse}
-\PENDING{Update-order experiment not yet run.}
 
-% 결과 문장은 결과를 본 뒤 고르세요.
-%  - 제안 순서가 가장 좋을 때: The proposed order achieved the best validation performance, which is consistent with its biological rationale.
-%  - 차이가 작을 때: Performance was comparable across orders, indicating that the model is not sensitive to the update order; the proposed order is therefore a design choice rather than an empirically optimal one.
-\textcolor{blue}{We evaluated all six permutations of the three node types with the same metapaths, decoder and settings. \TODO{Confirm six orders were run, then state the result.} The results are reported in the revised ablation table under Reviewer 4, Major Comment 3.}
 \end{revresponse}
 
 %%%%%%%%%%%%%%%% R1.6 %%%%%%%%%%%%%%%%
@@ -165,9 +118,7 @@ This manuscript proposes MSGAT, a metapath-based heterogeneous graph neural netw
 \end{revcomment}
 
 \begin{revresponse}
-\PENDING{R-GCN, HGT and DistMult are not yet implemented or run.}
 
-\textcolor{blue}{We have added R-GCN \cite{schlichtkrull2018rgcn} and HGT \cite{hu2020hgt} as heterogeneous graph baselines and DistMult \cite{yang2015distmult} as a knowledge-graph embedding baseline. They use the same splits, negatives, seeds and evaluation graph as MSGAT, and their tuning ranges and parameter counts are reported. MAGNN \cite{fu2020magnn} and GTN \cite{yun2019gtn} were not included, for the reason given in Table~\ref{tab:not-addressed}. The updated comparison is shown under Reviewer 4, Major Comment 6.}
 \end{revresponse}
 
 %%%%%%%%%%%%%%%% R1.7 %%%%%%%%%%%%%%%%
@@ -176,9 +127,7 @@ This manuscript proposes MSGAT, a metapath-based heterogeneous graph neural netw
 \end{revcomment}
 
 \begin{revresponse}
-\PENDING{Depth-matched experiment not yet run.}
 
-\textcolor{blue}{We agree that this is a plausible explanation. Within one update round, the phenotype update can receive information that has already passed through the compound and herb updates, whereas a model without synchronization propagates one step per round. We therefore ran the model without synchronization for two and three update rounds, with weights shared across rounds; at three rounds its propagation depth is at least that of one MSGAT round. \TODO{State whether MSGAT still differs from the depth-matched configurations, with the paired difference and 95\% CI.} The results are in the revised ablation table under Reviewer 4, Major Comment 3.}
 \end{revresponse}
 
 %%%%%%%%%%%%%%%% R1.8 %%%%%%%%%%%%%%%%
@@ -187,7 +136,7 @@ This manuscript proposes MSGAT, a metapath-based heterogeneous graph neural netw
 \end{revcomment}
 
 \begin{revresponse}
-\textcolor{blue}{We agree. Edges are removed from the graph while all nodes remain, so every herb and phenotype is present during training. We now state that the task is transductive link prediction among nodes present in the graph, and we have restricted the generalization claims accordingly. Node-disjoint evaluation is discussed as future work. The revised text is shown under Reviewer 4, Major Comment 9.}
+
 \end{revresponse}
 
 %%%%%%%%%%%%%%%% R1.9 %%%%%%%%%%%%%%%%
@@ -196,9 +145,7 @@ This manuscript proposes MSGAT, a metapath-based heterogeneous graph neural netw
 \end{revcomment}
 
 \begin{revresponse}
-\PENDING{Ranking evaluation is not yet implemented or run.}
 
-\textcolor{blue}{We have added two evaluations to the balanced setting. In the imbalanced setting, each positive test edge is evaluated against \TODO{K = 10, 50, 100} negatives. In the full-ranking setting, all herbs are ranked for each test phenotype after excluding training positives, and we report Hits@K, Precision@K, Recall@K and MRR. We also report a degree-only baseline. The results are shown under Reviewer 4, Major Comment 5.}
 \end{revresponse}
 
 %%%%%%%%%%%%%%%% R1.10 %%%%%%%%%%%%%%%%
@@ -207,7 +154,7 @@ This manuscript proposes MSGAT, a metapath-based heterogeneous graph neural netw
 \end{revcomment}
 
 \begin{revresponse}
-\textcolor{blue}{We agree. We have removed \enquote{significantly outperforms} and \enquote{proves the superiority}, and inferential claims are now made only where a paired test is reported. The case study candidates are now described as computationally prioritized candidates supported by preliminary literature evidence. The revised text is shown under Reviewer 4, Major Comments 6 and 7.}
+
 \end{revresponse}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -224,9 +171,7 @@ Section 5.7 states that separate graphs are constructed from training, validatio
 \end{revcomment}
 
 \begin{revresponse}
-\PENDING{Rerun under the corrected protocol; release of splits and settings.}
 
-\textcolor{blue}{We agree that the original evaluation graphs exposed held-out edges, and we have corrected this. Validation and test edges, with their reverse edges, are now excluded from all graph inputs, and all results were regenerated. The original evaluation used five repeated random 6:2:2 splits rather than five-fold cross-validation; the revised design is described in the response to Reviewer 1, Comment 2. The split files and final settings are publicly available. The revised text and the pseudocode are shown under Reviewer 4, Major Comment 1.}
 \end{revresponse}
 
 %%%%%%%%%%%%%%%% R2.2 %%%%%%%%%%%%%%%%
@@ -235,9 +180,7 @@ How does the decoder in Equation 14 generate phenotype-specific herb rankings? W
 \end{revcomment}
 
 \begin{revresponse}
-\PENDING{Decoder comparison and final decoder choice.}
 
-\textcolor{blue}{The Reviewer is correct on both points. Equation 14 accurately describes the original implementation: a single linear layer followed by a sigmoid, with no hidden layers, so the \enquote{MLP} label in Fig. 1 was inaccurate. Because the score is additively separable, the relative ranking of herbs was the same for every phenotype. We compared additive, dot-product, Hadamard, bilinear and MLP decoders under the corrected protocol, selected the final decoder on validation performance, and updated Eq. 14 and Fig. 1. Details are shown under Reviewer 4, Major Comment 2.}
 \end{revresponse}
 
 %%%%%%%%%%%%%%%% R2.3 %%%%%%%%%%%%%%%%
@@ -246,9 +189,7 @@ Candidate metapaths are repeatedly selected using five-fold performance and pair
 \end{revcomment}
 
 \begin{revresponse}
-\PENDING{Metapath re-selection not yet run; final split design not decided.}
 
-\textcolor{blue}{We agree. The original selection used the same splits as the final evaluation. Selection now uses repeated training/validation partitions of the development data only, and the final model is evaluated on the test set that was withheld from the whole procedure. Repeated testing is addressed with the corrected resampled t-test and Holm correction within each round. Details are shown under Reviewer 4, Major Comment 4.}
 \end{revresponse}
 
 %%%%%%%%%%%%%%%% R2.4 %%%%%%%%%%%%%%%%
@@ -257,9 +198,7 @@ The ablation study removes normalization and residual connections but does not d
 \end{revcomment}
 
 \begin{revresponse}
-\PENDING{Sync-off experiment not yet run.}
 
-\textcolor{blue}{We agree with both points. We added a configuration with synchronization disabled that shares the metapaths, decoder, normalization, residual connections and training settings of MSGAT. In this configuration with one update round, compound embeddings are never consumed by the herb or phenotype updates, so the model reduces to a HAN-style architecture. We report it as a controlled HAN baseline, and the difference between it and MSGAT isolates synchronization. The revised table is shown under Reviewer 4, Major Comment 3.}
 \end{revresponse}
 
 %%%%%%%%%%%%%%%% R2.5 %%%%%%%%%%%%%%%%
@@ -268,27 +207,7 @@ The manuscript requires language editing to correct grammatical errors, such as 
 \end{revcomment}
 
 \begin{revresponse}
-\PENDING{Language editing not yet done.}
 
-\textcolor{blue}{We have corrected these errors and had the manuscript professionally edited \TODO{confirm}. Examples of the changes are shown below.}
-
-\begin{changes}
-{\bf{Language corrections throughout the manuscript.}}
-
-\vspace{1mm}
-{\color{blue}
-\begin{tabular}{@{}p{0.45\linewidth}p{0.48\linewidth}@{}}
-\toprule
-Original & Revised \\
-\midrule
-literature evidences & literature evidence \\
-vectors with 1024 dimension & 1,024-dimensional vectors \\
-proves the superiority of & \TODO{wording depends on the paired result} \\
-further validated through literature analysis & supported by preliminary literature evidence \\
-\bottomrule
-\end{tabular}
-}
-\end{changes}
 \end{revresponse}
 
 %%%%%%%%%%%%%%%% R2.6 %%%%%%%%%%%%%%%%
@@ -297,11 +216,7 @@ In Parkinson's disease case study, four candidates are selected from the top 50 
 \end{revcomment}
 
 \begin{revresponse}
-\PENDING{PD case study not yet repeated.}
 
-% 주의: 0.9725는 k/359 꼴로 나오지 않습니다 (349/359 = 0.9721, 350/359 = 0.9749).
-% 분모가 359가 아니거나(예: 353/363, 354/364) 여러 번의 평균일 수 있습니다. 원래 코드로 확인하세요.
-\textcolor{blue}{We repeated the case study with the revised model. The complete ranking of all herbs is provided as Supplementary Data, and the supplement now defines recall, including its threshold, denominator and candidate set, together with the corresponding precision and false-positive rate. Candidates are selected by a rule fixed before the literature review. Details are shown under Reviewer 4, Major Comment 7.}
 \end{revresponse}
 
 %%%%%%%%%%%%%%%% R2.7 %%%%%%%%%%%%%%%%
@@ -315,13 +230,7 @@ Consider discussing related works.\\
 \end{revcomment}
 
 \begin{revresponse}
-\textcolor{blue}{We reviewed these studies and now discuss them in the Introduction, as shown below.}
 
-\begin{changes}
-{\bf{Introduction (added sentences).}}
-
-\textcolor{blue}{Recent work has broadened the computational resources for herbal medicine. Curated databases such as TCMM integrate modernized traditional medicine concepts and their biological relations \cite{ren2024tcmm}, and HerbComb supports the study of combinational therapies from herbal medicines \cite{wang2025herbcomb}. EthnoHERBS combines documented ethnobotanical knowledge with natural product chemistry and in silico analysis \cite{zouraris2025ethnoherbs}, and NaCTR suggests natural product-derived candidates for a given disease through search space reduction \cite{jung2024nactr}. Artificial intelligence, including graph neural networks, is also increasingly applied to network pharmacology \cite{cui2025ai}. In contrast to these resources and pipelines, the present study addresses link prediction on a heterogeneous herb--compound--phenotype graph.}
-\end{changes}
 \end{revresponse}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -338,7 +247,7 @@ The manuscript proposes MSGAT, a heterogeneous graph-based framework combining i
 \end{revcomment}
 
 \begin{revresponse}
-\textcolor{blue}{We agree. The graph has no molecular target nodes, and the model predicts herb--phenotype associations, so it does not address compound--target interactions or synergy directly. We now present the MCMT problem as contextual motivation only and state that MSGAT models many-to-many herb--compound--phenotype associations. The revised text is shown under Reviewer 4, Major Comment 8.}
+
 \end{revresponse}
 
 %%%%%%%%%%%%%%%% R3.2 %%%%%%%%%%%%%%%%
@@ -347,10 +256,7 @@ The manuscript proposes MSGAT, a heterogeneous graph-based framework combining i
 \end{revcomment}
 
 \begin{revresponse}
-\PENDING{Database versions, evidence types and preprocessing records must be recovered; herb--compound edge count must be checked.}
 
-% 주의: herb-compound 1,048,576개는 Excel 최대 행 수(2^20)와 정확히 같습니다. 파일 잘림 여부를 먼저 확인하세요.
-\textcolor{blue}{We now report the database versions and download dates, the evidence type of each association source, and the treatment of synonyms and of records that overlap across sources: \TODO{fill in from the preprocessing records}. Node sets are built only from identifiers that appear in the edge files, so the graph contains no disconnected nodes. Duplicate edges are removed during graph construction, and the node and edge counts have been recomputed accordingly: \TODO{updated counts}. The revised text is shown under Reviewer 4, Major Comment 9, and the edge semantics are shown under Major Comment 8.}
 \end{revresponse}
 
 %%%%%%%%%%%%%%%% R3.3 %%%%%%%%%%%%%%%%
@@ -359,9 +265,7 @@ The manuscript proposes MSGAT, a heterogeneous graph-based framework combining i
 \end{revcomment}
 
 \begin{revresponse}
-\PENDING{Metapath re-selection not yet run; final split design not decided.}
 
-\textcolor{blue}{In the original study, test performance on the same splits informed the selection, so the two stages were not independent. We have separated them. Selection now uses repeated training/validation partitions of the development data, with candidates compared on validation performance only. The test set is set aside before selection and is used once, for the final evaluation. The selected set is therefore fixed before the test set is evaluated. Details are shown under Reviewer 4, Major Comment 4.}
 \end{revresponse}
 
 %%%%%%%%%%%%%%%% R3.4 %%%%%%%%%%%%%%%%
@@ -370,11 +274,7 @@ The manuscript proposes MSGAT, a heterogeneous graph-based framework combining i
 \end{revcomment}
 
 \begin{revresponse}
-\PENDING{Metapath re-selection not yet run. Number of repetitions must be fixed in advance.}
 
-% 주의: md의 M4-b 초안은 "10회 반복"이고 일정표(7.3)는 3회입니다. 3회면 Holm 보정을 통과하기가
-% 사실상 불가능합니다. 반복 수를 정한 뒤 \TODO{N}을 채우세요.
-\textcolor{blue}{These issues were not addressed in the original procedure. There were 27 candidates in the first round, and about 150 tests over all rounds \TODO{confirm count}, at an unadjusted threshold. In the revised procedure, overlapping training sets are handled with the corrected resampled t-test \cite{nadeau2003inference} over \TODO{N} repetitions, and repeated testing within each round is handled with Holm correction \cite{holm1979simple}. We report the number of comparisons, the mean difference with its 95\% CI, and exact and adjusted P values for every candidate. Because selection is adaptive, we treat these P values as a stopping rule for selection and not as confirmatory evidence; confirmatory comparisons are made only on the withheld test set. Details are shown under Reviewer 4, Major Comment 4.}
 \end{revresponse}
 
 %%%%%%%%%%%%%%%% R3.5 %%%%%%%%%%%%%%%%
@@ -383,9 +283,7 @@ The manuscript proposes MSGAT, a heterogeneous graph-based framework combining i
 \end{revcomment}
 
 \begin{revresponse}
-\PENDING{Final comparison not yet run.}
 
-\textcolor{blue}{We have removed this claim. All models are now compared over paired repetitions, and we report the mean paired difference with its 95\% CI, the effect size and the exact adjusted P value. \TODO{State the uncertainty of the main gains.} We assess practical relevance with ranking metrics in the candidate-prioritization setting, not with AUROC and AUPRC alone: \TODO{state the ranking result}. The Fig. 2 legend now defines the test, the compared pairs and the adjustment, and the contribution of synchronization is attributed only from the controlled ablation. Details are shown under Reviewer 4, Major Comments 3 and 6.}
 \end{revresponse}
 
 %%%%%%%%%%%%%%%% R3.6 %%%%%%%%%%%%%%%%
@@ -394,9 +292,7 @@ The manuscript proposes MSGAT, a heterogeneous graph-based framework combining i
 \end{revcomment}
 
 \begin{revresponse}
-\PENDING{Enrichment analysis not yet run.}
 
-\textcolor{blue}{We agree. The displayed embeddings came from a model trained with known PD associations, so the clustering of known PD herbs was partly circular, and we have withdrawn the statement that UMAP confirmed functional similarity. The analysis now uses embeddings from the model trained with PD edges removed, and neighborhood enrichment is computed in the embedding space against a label-permutation null. UMAP is used for display only, and its parameters, seed and source embeddings are reported. Details are shown under Reviewer 4, Major Comment 7.}
 \end{revresponse}
 
 %%%%%%%%%%%%%%%% R3.7 %%%%%%%%%%%%%%%%
@@ -405,9 +301,7 @@ The manuscript proposes MSGAT, a heterogeneous graph-based framework combining i
 \end{revcomment}
 
 \begin{revresponse}
-\PENDING{Figure 3 must be redrawn after the candidates are final.}
 
-\textcolor{blue}{The Reviewer is correct; the label was an error. Fig. 3 has been redrawn with verified compound--organism assignments, the supplementary cross-references now match the panel numbering, and the diagrams distinguish experimentally demonstrated relationships (solid lines) from proposed links (dashed lines).}
 \end{revresponse}
 
 %%%%%%%%%%%%%%%% R3.8 %%%%%%%%%%%%%%%%
@@ -416,9 +310,7 @@ The manuscript proposes MSGAT, a heterogeneous graph-based framework combining i
 \end{revcomment}
 
 \begin{revresponse}
-\PENDING{PD case study not yet repeated; check how the original recall was computed.}
 
-\textcolor{blue}{We agree that recall alone is insufficient. In the original study, recall came from the model trained with herb--PD edges removed, whereas candidate ranking used a model trained on the complete graph, so the two were different models. The revised case study removes all herb--PD edges before graph and metapath construction, in both directions and including the PD terms listed in the supplement: \TODO{PD phenotype identifiers, synonyms and child terms}. We report the threshold, denominator, candidate set, precision and false-positive rate, along with AUROC, AUPRC and Precision@K. \TODO{State which model produces the final candidate ranking.} Details are shown under Reviewer 4, Major Comment 7.}
 \end{revresponse}
 
 %%%%%%%%%%%%%%%% R3.9 %%%%%%%%%%%%%%%%
@@ -427,9 +319,7 @@ The manuscript proposes MSGAT, a heterogeneous graph-based framework combining i
 \end{revcomment}
 
 \begin{revresponse}
-\PENDING{Selection rule must be fixed before the literature review; PD case study not yet repeated.}
 
-\textcolor{blue}{We agree. The candidates are now chosen by a rule fixed before the literature review: \TODO{state the rule, for example all top-50 herbs absent from the input database, in rank order}. The complete top-50 list, with scores, known-association status and the literature-assessment criteria, is provided in the supplement. We now use \enquote{novel} only to mean absent from the input database, and an association documented in the literature but absent from the database is described as recovered by the model. Literature support is no longer described as validation. Details are shown under Reviewer 4, Major Comment 7.}
 \end{revresponse}
 
 %%%%%%%%%%%%%%%% R3.10 %%%%%%%%%%%%%%%%
@@ -438,9 +328,7 @@ The manuscript proposes MSGAT, a heterogeneous graph-based framework combining i
 \end{revcomment}
 
 \begin{revresponse}
-\PENDING{Depends on whether Inocybe favrei remains a candidate in the new ranking.}
 
-\textcolor{blue}{We agree. The evidence we cited concerns the genus Inocybe, not I. favrei, so the species-level statement was not supported and has been removed. \TODO{If I. favrei remains in the list, state the genus-level limit, its known toxicity, and the level of the psilocybin evidence. If not, state that it no longer appears.} We now define \enquote{herb} in the graph as a natural product source that can include fungi, and we do not imply established therapeutic use.}
 \end{revresponse}
 
 %%%%%%%%%%%%%%%% R3.11 %%%%%%%%%%%%%%%%
@@ -449,9 +337,7 @@ The manuscript proposes MSGAT, a heterogeneous graph-based framework combining i
 \end{revcomment}
 
 \begin{revresponse}
-\PENDING{Literature re-examination not yet done.}
 
-\textcolor{blue}{We agree. Each candidate's evidence is now classified as chemical assay, cellular, animal or clinical in a supplementary table, and general antioxidant or anti-inflammatory activity is presented as a hypothesis only. Reference [28] did not support the claim and has been removed. During this review we also found that the soyasaponin study cited for animal models [34] was a study in SH-SY5Y cells, and it is now described as cellular evidence \TODO{confirm against the full text}. Details are shown under Reviewer 4, Major Comment 7 and Minor Comment 6.}
 \end{revresponse}
 
 %%%%%%%%%%%%%%%% R3.12 %%%%%%%%%%%%%%%%
@@ -460,7 +346,7 @@ The manuscript proposes MSGAT, a heterogeneous graph-based framework combining i
 \end{revcomment}
 
 \begin{revresponse}
-\textcolor{blue}{Yes, the evaluation is transductive. We have removed this phrase and restricted the claims to link prediction among nodes present in the graph. The Discussion now also notes that well-studied herbs have more recorded associations, so database coverage and annotation bias can affect both training and evaluation. The revised text is shown under Reviewer 4, Major Comment 9.}
+
 \end{revresponse}
 
 %%%%%%%%%%%%%%%% R3.13 %%%%%%%%%%%%%%%%
@@ -469,9 +355,7 @@ The manuscript proposes MSGAT, a heterogeneous graph-based framework combining i
 \end{revcomment}
 
 \begin{revresponse}
-\PENDING{Edge meanings must be checked against the CODA and COCONUT documentation.}
 
-\textcolor{blue}{All relations are used as undirected edges, so direction, anatomical context and the sign of the effect are not preserved in the model. The prediction label therefore means only that an association of the recorded types exists, and a predicted association does not imply therapeutic benefit. We have defined the label explicitly and revised the therapeutic interpretation throughout the manuscript. The meaning and source of each edge type are shown under Reviewer 4, Major Comment 8.}
 \end{revresponse}
 
 %%%%%%%%%%%%%%%% R3.14 %%%%%%%%%%%%%%%%
@@ -480,11 +364,7 @@ The manuscript proposes MSGAT, a heterogeneous graph-based framework combining i
 \end{revcomment}
 
 \begin{revresponse}
-\PENDING{Baselines not yet run; parameter counts depend on the final decoder and metapaths.}
 
-% 참고: 현재 설정(additive) 기준 parameter 수는 MSGAT 9,472,001 / HAN(metapath projection) 13,656,065 / HAN(type projection) 2,508,801.
-% 최종 decoder·metapath가 정해지면 다시 계산하세요.
-\textcolor{blue}{We agree. We now state which limitations belong to the HAN configuration we used and no longer attribute them to heterogeneous GNNs in general. HAN \cite{wang2019han} was reimplemented under the same protocol, with its metapaths reselected, and it is reported together with a controlled HAN that shares the metapaths and regularization of MSGAT. We added HGT and R-GCN and report the tuning range and parameter count of every model: \TODO{parameter counts}. Details are shown under Reviewer 4, Major Comments 3 and 6.}
 \end{revresponse}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -638,42 +518,7 @@ This concern also has direct implications for the biological specificity of the 
 \end{revcomment}
 
 \begin{revresponse}
-\PENDING{Decoder comparison not yet finished. Final decoder not chosen.}
 
-\textcolor{blue}{We agree with this analysis. Equation 14 accurately describes the original implementation, which was a single linear layer followed by a sigmoid, and the \enquote{MLP} label in Fig. 1 was inaccurate. Because this decoder is additively separable, the relative ranking of herbs was the same for every phenotype, so it reflected node-level association propensity rather than phenotype-specific compatibility. This also means that the original PD ranking was not specific to PD.}
-
-\textcolor{blue}{We compared five decoders under the corrected protocol: additive, dot-product, Hadamard, bilinear and MLP. The final decoder was chosen on validation performance, and the additive decoder is retained in the table as a reference. \TODO{Name the selected decoder and state its paired difference from the additive decoder.} Eq. 14 and Fig. 1 were updated accordingly, and the PD case study was repeated with the selected decoder (Major Comment 7).}
-
-\begin{changes}
-{\bf{Eq.~(14) and Section~5.6 (revised).}}
-
-{\color{blue}
-\TODO{Replace with the selected decoder. The MLP form is shown as a placeholder.}
-\begin{equation*}
-p_{uv} = \sigma\left( \mathrm{MLP}\left( [z_u \,\|\, z_v] \right) \right)
-\end{equation*}
-where the MLP has \TODO{architecture} hidden layers with ReLU activation. Unlike a single linear layer, this decoder is not additively separable, so herb rankings can differ between phenotypes.
-}
-
-\medskip\hrule\medskip
-
-{\bf{Supplementary Table (added): decoder comparison, mean over repetitions.}}
-
-\vspace{1mm}
-{\color{blue}
-\begin{tabular}{@{}llccc@{}}
-\toprule
-Decoder & Score & Val AUROC & Test AUROC & Test AUPRC \\
-\midrule
-Additive & $\sigma(w^\top [z_u \| z_v] + b)$ & \tbd & \tbd & \tbd \\
-Dot-product & $\sigma(z_u^\top z_v / \sqrt{d} + b)$ & \tbd & \tbd & \tbd \\
-Hadamard & $\sigma(w^\top (z_u \odot z_v) + b)$ & \tbd & \tbd & \tbd \\
-Bilinear & $\sigma(z_u^\top W z_v + b)$ & \tbd & \tbd & \tbd \\
-MLP & $\sigma(\mathrm{MLP}([z_u \| z_v]))$ & \tbd & \tbd & \tbd \\
-\bottomrule
-\end{tabular}
-}
-\end{changes}
 \end{revresponse}
 
 %%%%%%%%%%%%%%%% R4 Major 3 %%%%%%%%%%%%%%%%
@@ -713,57 +558,7 @@ The authors should explain why this particular update order is optimal and demon
 \end{revcomment}
 
 \begin{revresponse}
-\PENDING{Ablation experiments not yet run.}
 
-% 결과 시나리오 (md 7.4). 결과를 본 뒤 하나만 남기세요.
-%  A  : Under the corrected protocol, MSGAT consistently outperforms HAN, and the controlled ablation confirms the contribution of cross-type synchronization.
-%  B-1: MSGAT performs comparably to HAN overall, while [pre-specified subgroup / ranking results].
-%  B-2: Under the corrected protocol, the synchronization mechanism did not improve performance over HAN. We have therefore revised the scope of our contributions to ...
-\textcolor{blue}{We agree and have replaced the ablation study with the controlled design below.}
-
-\textcolor{blue}{\textbf{Controlled comparison.} All configurations share the metapaths, decoder, training settings, splits and seeds where the configuration allows it. Two of the suggested rows coincide when there is one update round: without synchronization all three node types are updated from the embeddings available at the start of the round, and because compound embeddings are then never consumed by the herb or phenotype updates, the model reduces to a HAN-style architecture. We report this configuration as a controlled HAN baseline. The difference between it and MSGAT isolates synchronization. We also report parameter counts to document differences in capacity: \TODO{parameter counts}.}
-
-\textcolor{blue}{\textbf{Result.} \TODO{State the paired differences and whether the results support a contribution of synchronization. See the scenarios in the source.}}
-
-\textcolor{blue}{\textbf{Update order.} We tested all six orders. The proposed order was motivated by compounds constituting herbs and phenotypes arising from their actions, and this is a design rationale rather than a proof of optimality. \TODO{State the result.}}
-
-\textcolor{blue}{\textbf{Scope of the claim.} We agree that, within a single forward pass, updated representations propagate only along the update order, and compound nodes do not receive the updated herb or phenotype representations. Cross-type relational structure is captured by the metapaths, whereas synchronization determines which updated representations are reused in later updates. We have revised the manuscript to distinguish these two roles and removed the claim that the mechanism fully captures interdependencies among all node types. Repeating update rounds is the configuration in which compound nodes do receive updated information, and it is included below.}
-
-\begin{changes}
-{\bf{Table 2 (replaced).}}
-
-\vspace{1mm}
-{\color{blue}\small
-\begin{tabular}{@{}p{0.46\linewidth}ccp{0.28\linewidth}@{}}
-\toprule
-Configuration & AUROC & AUPRC & $\Delta$AUROC vs. MSGAT [95\% CI], adj. $P$ \\
-\midrule
-HAN (herb and phenotype updates) & \tbd & \tbd & \tbd \\
-Controlled HAN (MSGAT without synchronization) & \tbd & \tbd & \tbd \\
-MSGAT without synchronization, 2 rounds & \tbd & \tbd & \tbd \\
-MSGAT without synchronization, 3 rounds & \tbd & \tbd & \tbd \\
-MSGAT without layer norm and residual & \tbd & \tbd & \tbd \\
-MSGAT without layer norm & \tbd & \tbd & \tbd \\
-MSGAT, 2 rounds & \tbd & \tbd & \tbd \\
-MSGAT, 3 rounds & \tbd & \tbd & \tbd \\
-MSGAT, C$\rightarrow$P$\rightarrow$H & \tbd & \tbd & \tbd \\
-MSGAT, H$\rightarrow$C$\rightarrow$P & \tbd & \tbd & \tbd \\
-MSGAT, H$\rightarrow$P$\rightarrow$C & \tbd & \tbd & \tbd \\
-MSGAT, P$\rightarrow$C$\rightarrow$H & \tbd & \tbd & \tbd \\
-MSGAT, P$\rightarrow$H$\rightarrow$C & \tbd & \tbd & \tbd \\
-MSGAT (C$\rightarrow$H$\rightarrow$P, 1 round) & \tbd & \tbd & reference \\
-\bottomrule
-\end{tabular}
-}
-
-\medskip\hrule\medskip
-
-{\bf{Sections~2.3 and 5.4 (revised sentences).}}
-
-{\color{blue}
-This sequence places compounds, which constitute herbs, first and phenotypes last, so that compounds are updated first within the forward-pass sequence and their information is reflected in the herb embeddings. Once a node type is updated, its embeddings replace the earlier ones for the updates that follow in the same round. Metapaths define the cross-type relational structure, whereas synchronization determines which updated embeddings are reused. Within one round, updated information propagates only along the update order; compound nodes do not receive updated herb or phenotype embeddings unless further rounds are used.
-}
-\end{changes}
 \end{revresponse}
 
 %%%%%%%%%%%%%%%% R4 Major 4 %%%%%%%%%%%%%%%%
@@ -788,40 +583,7 @@ The selection strategy should also be compared against predefined biologically m
 \end{revcomment}
 
 \begin{revresponse}
-\PENDING{Selection script is not yet revised and re-selection has not been run. Number of repetitions and final split design are not decided.}
 
-\textcolor{blue}{We agree with these concerns and repeated the selection under a revised procedure.}
-
-\textcolor{blue}{\textbf{Data used for selection.} The original selection recorded test performance, so test-set information influenced model development. Selection now uses repeated training/validation partitions of the development data, and candidates are compared on validation performance only. The test set is withheld throughout. Because selection was run once rather than inside every outer fold, this is a single held-out design and not full nested validation; full nesting was computationally impractical \TODO{confirm}.}
-
-\textcolor{blue}{\textbf{Multiple comparisons.} The original procedure had 27 candidates in the first round. Candidates are now tested with the corrected resampled t-test \cite{nadeau2003inference} over \TODO{N} repetitions and Holm correction \cite{holm1979simple} within each round. We report effect sizes with 95\% CIs. These tests serve as the stopping rule for selection and not as confirmatory inference.}
-
-\textcolor{blue}{\textbf{Greedy selection and prior assumptions.} We agree that this is greedy forward selection and that it does not guarantee a globally optimal set. We renamed it accordingly, removed the claims of optimality and noted this as a limitation. We also agree that the base metapaths and maximum length were set a priori. The base set is a structural requirement, because each node type needs at least one metapath and herbs have no herb--herb edges, and the length limit reflects semantic dilution and computational cost. The text now states that the procedure reduces, rather than eliminates, reliance on manual selection.}
-
-\textcolor{blue}{\textbf{Trajectory and comparison.} The complete trajectory is provided in a supplementary table. We also compared the selected set with predefined biologically motivated metapaths and with an attention-based strategy in which all candidates are supplied to the model and weighted by metapath-level attention. \TODO{State the result.}}
-
-\begin{changes}
-{\bf{Abstract and Sections~2.2 and 5.3 (revised sentences).}}
-
-{\color{blue}
-We use greedy forward selection to reduce reliance on manual metapath selection. Starting from a base set (CH, CC, PP), which provides at least one metapath for each node type, candidates of maximum length 3 are added one at a time. In each round, a candidate is accepted only if its improvement in validation performance over the current set remains significant after Holm correction, using the corrected resampled t-test over \TODO{N} repetitions. The process stops when no candidate is accepted. This procedure does not guarantee a globally optimal set. The test set is not used during selection.
-}
-
-\medskip\hrule\medskip
-
-{\bf{Supplementary Table (added): metapath selection trajectory.}}
-
-\vspace{1mm}
-{\color{blue}\small
-\begin{tabular}{@{}cccccccc@{}}
-\toprule
-Round & Candidate & $\Delta$AUROC [95\% CI] & $\Delta$AUPRC & $P$ & adj. $P$ & Accepted & Trainings, time \\
-\midrule
-\tbd & \tbd & \tbd & \tbd & \tbd & \tbd & \tbd & \tbd \\
-\bottomrule
-\end{tabular}
-}
-\end{changes}
 \end{revresponse}
 
 %%%%%%%%%%%%%%%% R4 Major 5 %%%%%%%%%%%%%%%%
@@ -846,41 +608,7 @@ The authors should additionally clarify whether negative-sampling frequencies ar
 \end{revcomment}
 
 \begin{revresponse}
-\PENDING{Ranking evaluation and degree baselines are not yet implemented or run.}
 
-\textcolor{blue}{\textbf{Unobserved pairs.} We agree that unobserved pairs are unlabeled rather than confirmed negatives \cite{bekker2020learning}. Treating them as negatives may underestimate true performance, and we now discuss this as a limitation. Degree-weighted sampling draws more often from highly connected nodes, where undocumented positives may be more likely.}
-
-\textcolor{blue}{\textbf{Evaluation under sparsity.} The balanced setting is retained for model comparison, and we added an imbalanced setting (1:\TODO{K}) and a full-ranking setting in which all herbs are ranked for each test phenotype after excluding training positives. We report Precision@K, Recall@K, Hits@K, MRR and enrichment among top-ranked predictions.}
-
-\textcolor{blue}{\textbf{Degree baselines.} We adopted degree-weighted negative sampling because uniformly sampled negatives are dominated by low-degree nodes, which would allow a trivial degree-based score to perform well. To test this, we now report a degree-only baseline under both uniform and weighted sampling. \TODO{State the result, including whether MSGAT exceeds the degree-only baseline.}}
-
-\textcolor{blue}{\textbf{Sampling details.} Training negatives use frequencies from the training positives. Validation and test negatives use frequencies from the positive edges of that split, so that they follow a comparable node distribution, and these are therefore not estimated exclusively from training data \TODO{confirm this is kept}. The frequencies are used only to construct pairs and are not model inputs. Validation and test negatives are sampled once, stored with the split and shared by all models, whereas training negatives are resampled during training. All known herb--phenotype associations from every split are excluded, so negatives never overlap with positives.}
-
-\begin{changes}
-{\bf{Supplementary Table (added): ranking evaluation.}}
-
-\vspace{1mm}
-{\color{blue}\small
-\begin{tabular}{@{}lccccc@{}}
-\toprule
-Model & Hits@\TODO{K} & Precision@\TODO{K} & Recall@\TODO{K} & MRR & AUPRC (1:\TODO{K}) \\
-\midrule
-Degree-only & \tbd & \tbd & \tbd & \tbd & \tbd \\
-HAN & \tbd & \tbd & \tbd & \tbd & \tbd \\
-Controlled HAN & \tbd & \tbd & \tbd & \tbd & \tbd \\
-MSGAT & \tbd & \tbd & \tbd & \tbd & \tbd \\
-\bottomrule
-\end{tabular}
-}
-
-\medskip\hrule\medskip
-
-{\bf{Discussion, limitations (added sentences).}}
-
-{\color{blue}
-Unobserved herb--phenotype pairs are unlabeled rather than confirmed negatives, so the reported performance may underestimate the ability of the model to identify undocumented associations.
-}
-\end{changes}
 \end{revresponse}
 
 %%%%%%%%%%%%%%%% R4 Major 6 %%%%%%%%%%%%%%%%
@@ -916,57 +644,7 @@ Finally, comparisons with modern heterogeneous graph methods and knowledge-graph
 \end{revcomment}
 
 \begin{revresponse}
-\PENDING{Final comparison and new baselines not yet run. Paired test for a fixed test set not yet decided.}
 
-% 주의: 고정 test set 설계에서는 반복 간 차이가 학습 쪽 변동만 반영합니다.
-% corrected resampled t-test의 전제와 다를 수 있으니 CI 산출 방식을 정한 뒤 \TODO를 채우세요.
-\textcolor{blue}{\textbf{Size of the improvements.} We agree that the original differences were small and did not establish a cause. We have moderated the language throughout and attribute differences to a specific component only where the controlled ablation supports it. \TODO{State the updated differences and how practically meaningful they are.}}
-
-\textcolor{blue}{\textbf{Statistical reporting.} All models are evaluated on identical splits over \TODO{N} seeds, and we report the mean paired difference with its 95\% CI, the effect size and the Holm-adjusted P value, using \TODO{name the paired test and CI method}. The Fig. 2 legend now states the test, the compared pairs and the meaning of each annotation.}
-
-\textcolor{blue}{\textbf{Seeds.} Random, NumPy, PyTorch and DGL seeds are now fixed, and the random node features are regenerated for each seed.}
-
-\textcolor{blue}{\textbf{Baselines.} We added R-GCN \cite{schlichtkrull2018rgcn}, HGT \cite{hu2020hgt} and DistMult \cite{yang2015distmult}. ComplEx \cite{trouillon2016complex} was not included, for the reason given in Table~\ref{tab:not-addressed}.}
-
-\begin{changes}
-{\bf{Table 1 (replaced).}}
-
-\vspace{1mm}
-{\color{blue}\small
-\begin{tabular}{@{}lcccc@{}}
-\toprule
-Model & AUROC & AUPRC & $\Delta$AUROC vs. MSGAT [95\% CI] & adj. $P$ \\
-\midrule
-KNN, LR, MLP, GB (one row each) & \tbd & \tbd & \tbd & \tbd \\
-Degree-only & \tbd & \tbd & \tbd & \tbd \\
-GCN & \tbd & \tbd & \tbd & \tbd \\
-GAT & \tbd & \tbd & \tbd & \tbd \\
-R-GCN & \tbd & \tbd & \tbd & \tbd \\
-HGT & \tbd & \tbd & \tbd & \tbd \\
-DistMult & \tbd & \tbd & \tbd & \tbd \\
-HAN & \tbd & \tbd & \tbd & \tbd \\
-Controlled HAN & \tbd & \tbd & \tbd & \tbd \\
-MSGAT & \tbd & \tbd & reference & -- \\
-\bottomrule
-\end{tabular}
-}
-
-\medskip\hrule\medskip
-
-{\bf{Section~3.3 (revised sentences).}}
-
-{\color{blue}
-\TODO{Replace the sentence \enquote{It is remarkable that MSGAT outperforms HAN, which proves the superiority of our novel cross-type synchronization mechanism} with the paired result, without causal wording unless the ablation supports it.}
-}
-
-\medskip\hrule\medskip
-
-{\bf{Figure 2 legend (added sentences).}}
-
-{\color{blue}
-\TODO{Define for panels (a) to (c): the test, the compared pairs, the correction and the exact P values or thresholds.}
-}
-\end{changes}
 \end{revresponse}
 
 %%%%%%%%%%%%%%%% R4 Major 7 %%%%%%%%%%%%%%%%
@@ -1010,54 +688,7 @@ I recommend revising the claims from "validated therapeutic candidates" to "comp
 \end{revcomment}
 
 \begin{revresponse}
-\PENDING{PD case study not yet repeated. Candidates, ranks and literature review will change with the new model.}
 
-\textcolor{blue}{We agree that the original interpretation went beyond the evidence, and we repeated the case study with the revised protocol and decoder.}
-
-\textcolor{blue}{\textbf{Retrieval performance.} We report the threshold, the number of held-out associations, the number of predicted positives, precision and the false-positive rate, together with AUROC, AUPRC and Precision@K on the PD task for MSGAT, HAN and a degree-only baseline. \TODO{State the values, and the actual definition of the original recall.}}
-
-\textcolor{blue}{\textbf{Evidence for candidates.} Candidates follow a rule fixed before the literature review, and candidate-specific scores are provided. The evidence for each candidate is graded as chemical assay, cellular, animal or clinical. General antioxidant or anti-inflammatory activity is presented as a hypothesis and not as evidence of PD-specific activity.}
-
-\textcolor{blue}{\textbf{Inocybe favrei.} \TODO{If retained, state that the evidence is at genus level and note the toxicity of Inocybe species. If absent from the new ranking, say so.}}
-
-\textcolor{blue}{\textbf{Novelty.} \enquote{Novel} now means absent from the input database. An association that is documented in the literature but missing from the database, as for soybean, is described as a literature-supported association recovered by the model.}
-
-\textcolor{blue}{\textbf{Embedding analysis.} The original embeddings came from a model trained with PD edges, so we use embeddings from the model trained with these edges removed. We report k-nearest-neighbor enrichment of known PD herbs against a label-permutation null \TODO{result}, and UMAP is used for display only.}
-
-\textcolor{blue}{\textbf{Wording and further validation.} We adopted the suggested wording, \enquote{computationally prioritized candidates supported by preliminary literature evidence}, throughout the manuscript. Experimental and temporal validation are beyond the scope of this computational study and are discussed as future work.}
-
-\begin{changes}
-{\bf{Section~3.5 (rewritten, values to be completed).}}
-
-{\color{blue}
-We conducted a case study on Parkinson's disease (PD). All herb--PD edges, in both directions and including the terms listed in the supplement, were removed before graph and metapath construction, and the model was trained on the remaining graph. On these held-out edges, MSGAT reached AUROC \tbd, AUPRC \tbd\ and Precision@\TODO{K} \tbd, compared with \tbd\ for HAN and \tbd\ for a degree-only baseline. At a threshold of \tbd, recall was \tbd\ of the \tbd\ held-out associations, with \tbd\ predicted positives, precision \tbd\ and false-positive rate \tbd.
-
-All herbs were ranked by predicted score (Supplementary Data). Following a rule fixed before the literature review, we examined \TODO{rule}, which produced \tbd\ candidates absent from the input database. We refer to these as computationally prioritized candidates supported by preliminary literature evidence; the evidence level for each candidate is listed in Supplementary Table \TODO{number}. These results are hypotheses and do not establish therapeutic effects.
-}
-
-\medskip\hrule\medskip
-
-{\bf{Supplementary Table (added): candidates and evidence level.}}
-
-\vspace{1mm}
-{\color{blue}\small
-\begin{tabular}{@{}llllll@{}}
-\toprule
-Candidate & Rank, score & In database & Evidence level & Finding & Reference \\
-\midrule
-\tbd & \tbd & \tbd & \tbd & \tbd & \tbd \\
-\bottomrule
-\end{tabular}
-}
-
-\medskip\hrule\medskip
-
-{\bf{Figure 3 legend (revised sentences).}}
-
-{\color{blue}
-UMAP of herb embeddings from the model trained with herb--PD edges removed (n\_neighbors = \tbd, min\_dist = \tbd, random seed = \tbd). The plot is for display only; enrichment was computed in the embedding space.
-}
-\end{changes}
 \end{revresponse}
 
 %%%%%%%%%%%%%%%% R4 Major 8 %%%%%%%%%%%%%%%%
@@ -1080,40 +711,7 @@ The biological interpretability of MSGAT could also be improved through analyses
 \end{revcomment}
 
 \begin{revresponse}
-\PENDING{Edge meanings need the database documentation; attention analysis not yet run.}
 
-\textcolor{blue}{\textbf{MCMT scope.} We agree. The graph has no molecular targets, so it does not directly model compound--target interactions or synergy. We now present the MCMT problem as contextual motivation and state that MSGAT captures many-to-many herb--compound--phenotype associations. Adding targets and pathways is discussed as future work.}
-
-\textcolor{blue}{\textbf{Edge semantics.} The source and meaning of each edge type are shown below. All relations are used as undirected edges, and direction, anatomical context and effect sign are not used, so beneficial and adverse associations are not distinguished. A predicted association therefore does not imply therapeutic benefit, and we have revised the interpretation accordingly.}
-
-\textcolor{blue}{\textbf{Interpretability.} We report metapath-level attention weights and, for each candidate, the highest-attention compound and phenotype neighbors. \TODO{Confirm these analyses were run, otherwise move them to future work. The metapath attention is shared across node types in the current code.}}
-
-\begin{changes}
-{\bf{Abstract and Introduction (revised sentences).}}
-
-{\color{blue}
-Herbs act through many compounds and many biological targets, which motivates modeling them as networks. In this study, we address a narrower task: predicting herb--phenotype associations on a graph of herbs, compounds and phenotypes. The graph does not include molecular targets, so the model does not evaluate compound--target interactions or synergy.
-}
-
-\medskip\hrule\medskip
-
-{\bf{Supplementary Table (added): edge types.}}
-
-\vspace{1mm}
-{\color{blue}\small
-\begin{tabular}{@{}lllp{0.3\linewidth}l@{}}
-\toprule
-Edge type & Source & Count & Meaning and evidence basis & Direction used \\
-\midrule
-Compound--phenotype & CODA & \tbd & \TODO{from documentation} & undirected \\
-Compound--compound & CODA & \tbd & \TODO{from documentation} & undirected \\
-Phenotype--phenotype & CODA & \tbd & \TODO{from documentation} & undirected \\
-Herb--phenotype & COCONUT & \tbd & \TODO{from documentation} & undirected \\
-Herb--compound & COCONUT & \tbd & \TODO{from documentation} & undirected \\
-\bottomrule
-\end{tabular}
-}
-\end{changes}
 \end{revresponse}
 
 %%%%%%%%%%%%%%%% R4 Major 9 %%%%%%%%%%%%%%%%
@@ -1136,39 +734,7 @@ The current statement that data are available upon reasonable request limits ind
 \end{revcomment}
 
 \begin{revresponse}
-\PENDING{Implementation records must be gathered, and the code repository must be updated before submission.}
 
-\textcolor{blue}{\textbf{Initial features.} Initial node features are sampled from a standard normal distribution and kept fixed (non-trainable). Within a repetition, the same features are used for training, validation and testing, and they are regenerated with a different seed for each repetition.}
-
-\textcolor{blue}{\textbf{Dependence on initialization.} In the transductive setting, fixed random features act as node identifiers, a common choice for graphs without informative node attributes. We did not quantify how performance depends on the feature dimension, as listed in Table~\ref{tab:not-addressed}.}
-
-\textcolor{blue}{\textbf{Generalization.} We now state that the task is transductive link prediction among nodes present in the graph, and we have restricted the generalization claims accordingly. Cold-start evaluation and biologically informed features, such as chemical fingerprints for compounds, are discussed as future work.}
-
-\textcolor{blue}{\textbf{Implementation information and availability.} Database versions, preprocessing and entity mapping, seeds, search ranges, graph directionality, computational resources and training time are provided in a supplementary table. The source code, evaluation splits and metapath configurations are publicly available at \url{https://github.com/doremikong/MSGAT}. \TODO{Confirm whether the processed graph can be released under the database licenses.}}
-
-\begin{changes}
-{\bf{Section~5.2 (revised sentences).}}
-
-{\color{blue}
-Associations were collected from CODA (version \tbd, downloaded \tbd) and COCONUT (version \tbd, downloaded \tbd). Duplicate edges were removed, and node sets were built from identifiers present in the edge files, so the graph contains no disconnected nodes. \TODO{Synonym handling and overlap across sources.} Each node receives a fixed, non-trainable 1,024-dimensional feature vector sampled from a standard normal distribution, regenerated for each seed. All relations are represented as undirected edges.
-}
-
-\medskip\hrule\medskip
-
-{\bf{Discussion, limitations (added sentences).}}
-
-{\color{blue}
-This study addresses transductive link prediction among nodes present in the graph, and the results do not establish performance for unseen herbs or phenotypes. Well-studied herbs have more recorded associations, so database coverage and annotation bias can affect both training and evaluation.
-}
-
-\medskip\hrule\medskip
-
-{\bf{Data availability (replaced).}}
-
-{\color{blue}
-Source code, evaluation splits and metapath configurations are available at \url{https://github.com/doremikong/MSGAT}. \TODO{Processed graph location, or the identifiers and scripts needed to rebuild it.}
-}
-\end{changes}
 \end{revresponse}
 
 \setcommentlabel{Minor Comment}
@@ -1181,15 +747,7 @@ The authors should clarify why 0.6 was selected for the final model despite the 
 \end{revcomment}
 
 \begin{revresponse}
-\PENDING{Confirm that the original ablation runs also used 0.1. The main and selection scripts did.}
 
-\textcolor{blue}{This was a typographical error. The model was implemented with a dropout rate of 0.1, consistent with the parameter analysis. All experiments in the revised manuscript, including the ablation study, use 0.1.}
-
-\begin{changes}
-{\bf{Section~5.7 (corrected sentence).}}
-
-\textcolor{blue}{We set the hidden dimension size to 64, the number of attention heads to 16, the dropout rate of the node-level attention to 0.1, and the dimension of the semantic-level attention vector $q$ to 1024.}
-\end{changes}
 \end{revresponse}
 
 %%%%%%%%%%%%%%%% R4 Minor 2 %%%%%%%%%%%%%%%%
@@ -1200,9 +758,7 @@ The authors should clearly describe how each of the five folds is constructed an
 \end{revcomment}
 
 \begin{revresponse}
-\PENDING{Final split design is not decided.}
 
-\textcolor{blue}{The original analysis used five repeated random 6:2:2 splits rather than k-fold cross-validation, and the manuscript was incorrect to call this five-fold cross-validation. The revised design is described in the response to Reviewer 1, Comment 2, and the revised text is shown under Major Comment 1.}
 \end{revresponse}
 
 %%%%%%%%%%%%%%%% R4 Minor 3 %%%%%%%%%%%%%%%%
@@ -1213,7 +769,7 @@ Because the model is described as being trained end-to-end, "updated first withi
 \end{revcomment}
 
 \begin{revresponse}
-\textcolor{blue}{There is no separate pretraining stage. We have replaced \enquote{pre-trained} with \enquote{updated first within the forward-pass sequence}. The revised text is shown under Major Comment 3.}
+
 \end{revresponse}
 
 %%%%%%%%%%%%%%%% R4 Minor 4 %%%%%%%%%%%%%%%%
@@ -1224,7 +780,7 @@ Figure 2 would benefit from clearer significance annotations, particularly regar
 \end{revcomment}
 
 \begin{revresponse}
-\textcolor{blue}{Please see the response to Major Comment 6.}
+
 \end{revresponse}
 
 %%%%%%%%%%%%%%%% R4 Minor 5 %%%%%%%%%%%%%%%%
@@ -1235,31 +791,7 @@ A table describing each metapath, its starting and ending node types, biological
 \end{revcomment}
 
 \begin{revresponse}
-\PENDING{Rows show the originally selected metapaths. Replace them after re-selection, and check HPH versus PPH in the code.}
 
-\textcolor{blue}{We have added the table below.}
-
-\begin{changes}
-{\bf{Supplementary Table (added): selected metapaths.}}
-
-\vspace{1mm}
-{\color{blue}\small
-\begin{tabular}{@{}llllc@{}}
-\toprule
-Metapath & Start & End (updated) & Meaning & $\Delta$AUROC \\
-\midrule
-CH & compound & herb & herb aggregates its constituent compounds & base \\
-PH & phenotype & herb & herb aggregates its associated phenotypes & \tbd \\
-HPH & herb & herb & herb aggregates herbs that share a phenotype & \tbd \\
-CC & compound & compound & compound aggregates related compounds & base \\
-HC & herb & compound & compound aggregates herbs that contain it & \tbd \\
-PP & phenotype & phenotype & phenotype aggregates related phenotypes & base \\
-HP & herb & phenotype & phenotype aggregates its associated herbs & \tbd \\
-PCP & phenotype & phenotype & phenotype aggregates phenotypes that share a compound & \tbd \\
-\bottomrule
-\end{tabular}
-}
-\end{changes}
 \end{revresponse}
 
 %%%%%%%%%%%%%%%% R4 Minor 6 %%%%%%%%%%%%%%%%
@@ -1270,12 +802,7 @@ For example, claims regarding enhanced levodopa bioavailability from soybean and
 \end{revcomment}
 
 \begin{revresponse}
-\PENDING{Literature re-examination not yet done.}
 
-% 확인할 항목: [35] Salat & Tolosa는 levodopa 일반 review라 대두의 생체이용률 주장을 직접 뒷받침하는지 원문 확인.
-% [28]은 귀리 추출물 연구. [34]는 제목상 SH-SY5Y 세포 연구인데 본문은 animal model로 서술.
-% [21]은 Inocybe 속 수준의 근거. 후보가 바뀌면 새 후보 기준으로 다시 작성하세요.
-\textcolor{blue}{We re-examined every reference in the case study and replaced or removed those that did not directly support the specific claim. Former Ref. [28], which concerns oat extract added to oils, was removed. \TODO{State the outcome for the soybean levodopa claim and Ref. [35], and for the Inocybe claims and Ref. [21].} The remaining evidence is reported at its actual level in the table under Major Comment 7.}
 \end{revresponse}
 
 %%%%%%%%%%%%%%%% R4 Minor 7 %%%%%%%%%%%%%%%%
@@ -1284,7 +811,7 @@ For example, claims regarding enhanced levodopa bioavailability from soybean and
 \end{revcomment}
 
 \begin{revresponse}
-\textcolor{blue}{Please see the response to Major Comment 7. The legend of Fig. 3 now reports the source embeddings, UMAP parameters and seed, and the quantitative enrichment result is reported in the text.}
+
 \end{revresponse}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1295,8 +822,9 @@ For example, claims regarding enhanced levodopa bioavailability from soybean and
 
 \textcolor{blue}{Sincerely, \\ The Authors}
 
-\newpage
-\bibliographystyle{unsrt}
-\bibliography{references}
+% 인용(\cite)을 다시 넣으면 아래 세 줄의 주석을 푸세요.
+% \newpage
+% \bibliographystyle{unsrt}
+% \bibliography{references}
 
 \end{document}
