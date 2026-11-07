@@ -76,9 +76,9 @@ When revising your manuscript, please consider all issues mentioned in the revie
 Comment & Reason & What we did instead \\
 \midrule
 MAGNN, GTN and ComplEx baselines (R1.6, R3.14, R4 Major 6) & \TODO{Confirm the reason. Candidate: memory cost of metapath-instance encoding and learned adjacency products on a graph of this size.} & Added R-GCN, HGT and DistMult, which cover relation-specific message passing, heterogeneous attention and knowledge-graph embedding. \\
-Node-disjoint or cold-start evaluation (R1.8, R3.12, R4 Major 9) & Random node features carry no information about an unseen node, so the present model is not designed for this setting. R1.8 offered a clear statement of the setting as an alternative. & Stated that the task is transductive link prediction, restricted the generalization claims and listed the extension as future work. \\
+Node-disjoint or cold-start evaluation (R1.8, R3.12, R4 Major 9) & Not evaluated in this revision. R1.8 offered a clear statement of the setting as an alternative. & Stated that the task is transductive link prediction, restricted the generalization claims and listed the extension as future work. \\
 Biologically informed node features and sensitivity to feature dimension (R4 Major 9) & Requires mapping all node types to curated descriptors, which is outside the scope of this revision. & Stated how the fixed random features are used and listed informed features as future work. \\
-Positive-unlabeled evaluation (R4 Major 5) & Unlabeled pairs cannot be evaluated without an estimate of the class prior, which is not available here. & Treated unobserved pairs as unlabeled in the interpretation, added ranking metrics and discussed the limitation. \\
+Positive-unlabeled evaluation (R4 Major 5) & Requires an estimate of the class prior, which we do not have for this graph. & Treated unobserved pairs as unlabeled in the interpretation, added ranking metrics and discussed the limitation. \\
 Random metapath selection (R4 Major 4) & \TODO{Keep this row only if the comparison was not run.} & Compared against biologically predefined metapaths and an attention-based strategy. \\
 External, experimental or temporal validation of the case study (R4 Major 7) & Experimental work is beyond the scope of this computational study. R4 asked for this where possible. & Graded the available literature evidence by level and listed prospective validation as future work. \\
 Target and pathway nodes, and modeling of synergy (R3.1, R4 Major 8) & Requires a different graph and a different prediction task. & Presented the MCMT problem as motivation only and stated what the graph represents. \\
@@ -178,7 +178,7 @@ This manuscript proposes MSGAT, a metapath-based heterogeneous graph neural netw
 \begin{revresponse}
 \PENDING{Depth-matched experiment not yet run.}
 
-\textcolor{blue}{We agree that this is a plausible explanation. Within one update round, the phenotype update can receive information that has already passed through the compound and herb updates, whereas a model without synchronization propagates one step per round. We therefore ran the model without synchronization for two and three update rounds, with weights shared across rounds, so that its propagation depth is at least that of one MSGAT round. \TODO{State whether MSGAT still differs from the depth-matched configurations, with the paired difference and 95\% CI.} The results are in the revised ablation table under Reviewer 4, Major Comment 3.}
+\textcolor{blue}{We agree that this is a plausible explanation. Within one update round, the phenotype update can receive information that has already passed through the compound and herb updates, whereas a model without synchronization propagates one step per round. We therefore ran the model without synchronization for two and three update rounds, with weights shared across rounds; at three rounds its propagation depth is at least that of one MSGAT round. \TODO{State whether MSGAT still differs from the depth-matched configurations, with the paired difference and 95\% CI.} The results are in the revised ablation table under Reviewer 4, Major Comment 3.}
 \end{revresponse}
 
 %%%%%%%%%%%%%%%% R1.8 %%%%%%%%%%%%%%%%
@@ -374,7 +374,7 @@ The manuscript proposes MSGAT, a heterogeneous graph-based framework combining i
 
 % 주의: md의 M4-b 초안은 "10회 반복"이고 일정표(7.3)는 3회입니다. 3회면 Holm 보정을 통과하기가
 % 사실상 불가능합니다. 반복 수를 정한 뒤 \TODO{N}을 채우세요.
-\textcolor{blue}{These issues were not addressed in the original procedure. There were 27 candidates in the first round, and about 150 tests over all rounds, at an unadjusted threshold. In the revised procedure, overlapping training sets are handled with the corrected resampled t-test \cite{nadeau2003inference} over \TODO{N} repetitions, and repeated testing within each round is handled with Holm correction \cite{holm1979simple}. We report the number of comparisons, the mean difference with its 95\% CI, and exact and adjusted P values for every candidate. Because selection is adaptive, we treat these P values as a stopping rule for selection and not as confirmatory evidence; confirmatory comparisons are made only on the withheld test set. Details are shown under Reviewer 4, Major Comment 4.}
+\textcolor{blue}{These issues were not addressed in the original procedure. There were 27 candidates in the first round, and about 150 tests over all rounds \TODO{confirm count}, at an unadjusted threshold. In the revised procedure, overlapping training sets are handled with the corrected resampled t-test \cite{nadeau2003inference} over \TODO{N} repetitions, and repeated testing within each round is handled with Holm correction \cite{holm1979simple}. We report the number of comparisons, the mean difference with its 95\% CI, and exact and adjusted P values for every candidate. Because selection is adaptive, we treat these P values as a stopping rule for selection and not as confirmatory evidence; confirmatory comparisons are made only on the withheld test set. Details are shown under Reviewer 4, Major Comment 4.}
 \end{revresponse}
 
 %%%%%%%%%%%%%%%% R3.5 %%%%%%%%%%%%%%%%
@@ -484,7 +484,7 @@ The manuscript proposes MSGAT, a heterogeneous graph-based framework combining i
 
 % 참고: 현재 설정(additive) 기준 parameter 수는 MSGAT 9,472,001 / HAN(metapath projection) 13,656,065 / HAN(type projection) 2,508,801.
 % 최종 decoder·metapath가 정해지면 다시 계산하세요.
-\textcolor{blue}{We agree. We now state which limitations belong to the HAN configuration we used and no longer attribute them to heterogeneous GNNs in general. HAN 	te{wang2019han} was reimplemented under the same protocol, with its metapaths reselected, and it is reported together with a controlled HAN that shares the metapaths and regularization of MSGAT. We added HGT and R-GCN and report the tuning range and parameter count of every model: \TODO{parameter counts}. Details are shown under Reviewer 4, Major Comments 3 and 6.}
+\textcolor{blue}{We agree. We now state which limitations belong to the HAN configuration we used and no longer attribute them to heterogeneous GNNs in general. HAN \cite{wang2019han} was reimplemented under the same protocol, with its metapaths reselected, and it is reported together with a controlled HAN that shares the metapaths and regularization of MSGAT. We added HGT and R-GCN and report the tuning range and parameter count of every model: \TODO{parameter counts}. Details are shown under Reviewer 4, Major Comments 3 and 6.}
 \end{revresponse}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -538,7 +538,7 @@ This issue is critical because unresolved information leakage would undermine th
 
 \textcolor{blue}{\textbf{Adjacency construction.} Only herb--phenotype edges and their reverse edges are split. All other edge types are shared. One input graph, containing the shared edges and the training herb--phenotype edges, is used for training, validation and testing.}
 
-\textcolor{blue}{\textbf{Removal of held-out edges.} Validation and test edges, including their reverse edges, are absent from this input graph and are used only as prediction targets. Each run checks this automatically and stops if a held-out edge is found.}
+\textcolor{blue}{\textbf{Removal of held-out edges.} Validation and test edges, including their reverse edges, are absent from this input graph and are used only as prediction targets. Each run checks this automatically.}
 
 \textcolor{blue}{\textbf{Metapath-based adjacency.} Metapath-based adjacency is computed from the input graph in each repetition, so all metapath-based neighbors, including those through PH, HP and HPH, derive from training edges only.}
 
@@ -569,7 +569,7 @@ Herb--phenotype (HP) edges are the only edges that are split; all other edge typ
 \item Fix the seed and generate fixed random node features.
 \item Partition $E_{HP} \setminus E_{test}$ into $E_{train}$ and $E_{val}$, and sample $N_{val}$ once.
 \item Build $G_{train}$ by removing $E_{val}$, $E_{test}$ and their reverse edges from $G$.
-\item Stop if any edge of $E_{val} \cup E_{test}$ remains in $G_{train}$ in either direction.
+\item Verify that no edge of $E_{val} \cup E_{test}$ remains in $G_{train}$ in either direction.
 \item Until the maximum epoch or early stopping:
 \begin{enumerate}
 \setlength{\itemsep}{0pt}
@@ -1158,7 +1158,7 @@ The authors should clarify why 0.6 was selected for the final model despite the 
 \begin{revresponse}
 \PENDING{Confirm that the original ablation runs also used 0.1. The main and selection scripts did.}
 
-\textcolor{blue}{This was a typographical error. The model was implemented with a dropout rate of 0.1, consistent with the parameter analysis, and 0.6 was never selected. All experiments in the revised manuscript, including the ablation study, use 0.1.}
+\textcolor{blue}{This was a typographical error. The model was implemented with a dropout rate of 0.1, consistent with the parameter analysis. All experiments in the revised manuscript, including the ablation study, use 0.1.}
 
 \begin{changes}
 {\bf{Section~5.7 (corrected sentence).}}
